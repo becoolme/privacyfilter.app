@@ -1,0 +1,120 @@
+---
+import "../../styles/global.css";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const pageTitle = "Blog · Privacy Filter";
+const description =
+  "Notes on local PII detection, privacy-preserving redaction, and tools built on the openai/privacy-filter model.";
+const repoUrl = "https://github.com/becoolme/privacyfilter.app";
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="theme-color" content="#1769e0" />
+    <meta name="color-scheme" content="light" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231769e0'/%3E%3Cpath d='M50 22 28 32v18c0 14 9 22 22 28 13-6 22-14 22-28V32L50 22zm0 14 14 6v8c0 9-6 14-14 18-8-4-14-9-14-18v-8l14-6z' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Privacy Filter" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+  </head>
+  <body class="bg-bg text-text">
+    <main class="mx-auto w-full max-w-[860px] px-4 py-8 lg:py-9">
+      <header
+        role="banner"
+        class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-1 pb-5"
+      >
+        <a
+          class="inline-flex items-center gap-2.5 text-text no-underline"
+          href="/"
+          aria-label="Privacy Filter home"
+        >
+          <span
+            aria-hidden="true"
+            class="inline-grid place-items-center w-[30px] h-[30px] bg-accent text-white text-xs font-extrabold tracking-wider"
+            >PF</span
+          >
+          <strong class="font-extrabold tracking-tight text-base">Privacy Filter</strong>
+        </a>
+        <nav aria-label="Primary" class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+          <a class="text-muted no-underline hover:text-accent transition-colors" href="/">Home</a>
+          <a class="text-text no-underline font-semibold" href="/blog/" aria-current="page">Blog</a>
+          <a
+            class="text-muted no-underline hover:text-accent transition-colors"
+            href={repoUrl}
+            target="_blank"
+            rel="noopener">GitHub</a
+          >
+        </nav>
+      </header>
+
+      <section class="mb-8">
+        <h1 class="m-0 mb-3 text-[clamp(30px,4vw,44px)] leading-[1.08] tracking-tight font-bold">
+          Blog
+        </h1>
+        <p class="m-0 text-muted text-[16px] leading-[1.65] max-w-[640px]">{description}</p>
+      </section>
+
+      {posts.length === 0 ? (
+        <p class="text-muted">No posts yet.</p>
+      ) : (
+        <ul class="m-0 p-0 list-none grid gap-4">
+          {posts.map((post) => (
+            <li class="border border-line bg-panel p-5 hover:border-accent transition-colors">
+              <a class="no-underline text-text block" href={`/blog/${post.id}/`}>
+                <div class="flex items-center gap-3 mb-2 text-xs text-muted">
+                  <time datetime={post.data.pubDate.toISOString()}>
+                    {formatDate(post.data.pubDate)}
+                  </time>
+                  {post.data.tags.length > 0 && (
+                    <span class="flex flex-wrap gap-1.5">
+                      {post.data.tags.map((tag) => (
+                        <span class="px-1.5 py-0.5 bg-bg border border-line text-[11px] uppercase tracking-wider">
+                          {tag}
+                        </span>
+                      ))}
+                    </span>
+                  )}
+                </div>
+                <h2 class="m-0 mb-1.5 text-xl font-semibold leading-snug">
+                  {post.data.title}
+                </h2>
+                <p class="m-0 text-muted text-sm leading-[1.6]">{post.data.description}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <footer
+        role="contentinfo"
+        class="mt-10 pt-5 pb-9 border-t border-line text-[13px] text-muted"
+      >
+        <p class="my-0 text-center">
+          <a class="text-accent hover:underline" href="/">Back to Privacy Filter</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

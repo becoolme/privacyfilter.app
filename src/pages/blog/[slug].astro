@@ -1,0 +1,237 @@
+---
+import "../../styles/global.css";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post }
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const repoUrl = "https://github.com/becoolme/privacyfilter.app";
+const pageTitle = `${post.data.title} · Privacy Filter Blog`;
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={post.data.description} />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="theme-color" content="#1769e0" />
+    <meta name="color-scheme" content="light" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231769e0'/%3E%3Cpath d='M50 22 28 32v18c0 14 9 22 22 28 13-6 22-14 22-28V32L50 22zm0 14 14 6v8c0 9-6 14-14 18-8-4-14-9-14-18v-8l14-6z' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={post.data.title} />
+    <meta property="og:description" content={post.data.description} />
+    <meta property="og:site_name" content="Privacy Filter" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="article:published_time" content={post.data.pubDate.toISOString()} />
+    {post.data.updatedDate && (
+      <meta property="article:modified_time" content={post.data.updatedDate.toISOString()} />
+    )}
+    {post.data.tags.map((tag) => <meta property="article:tag" content={tag} />)}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={post.data.title} />
+    <meta name="twitter:description" content={post.data.description} />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: post.data.title,
+        description: post.data.description,
+        datePublished: post.data.pubDate.toISOString(),
+        dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+        author: { "@type": "Organization", name: post.data.author },
+        publisher: { "@type": "Organization", name: "Privacy Filter" },
+        inLanguage: "en"
+      })}
+    />
+  </head>
+  <body class="bg-bg text-text">
+    <main class="mx-auto w-full max-w-[760px] px-4 py-8 lg:py-9">
+      <header
+        role="banner"
+        class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-1 pb-5"
+      >
+        <a
+          class="inline-flex items-center gap-2.5 text-text no-underline"
+          href="/"
+          aria-label="Privacy Filter home"
+        >
+          <span
+            aria-hidden="true"
+            class="inline-grid place-items-center w-[30px] h-[30px] bg-accent text-white text-xs font-extrabold tracking-wider"
+            >PF</span
+          >
+          <strong class="font-extrabold tracking-tight text-base">Privacy Filter</strong>
+        </a>
+        <nav aria-label="Primary" class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+          <a class="text-muted no-underline hover:text-accent transition-colors" href="/">Home</a>
+          <a class="text-muted no-underline hover:text-accent transition-colors" href="/blog/">Blog</a>
+          <a
+            class="text-muted no-underline hover:text-accent transition-colors"
+            href={repoUrl}
+            target="_blank"
+            rel="noopener">GitHub</a
+          >
+        </nav>
+      </header>
+
+      <article class="border border-line bg-panel p-6 md:p-8">
+        <p class="m-0 mb-3 text-xs text-muted flex flex-wrap items-center gap-3">
+          <a class="text-accent no-underline hover:underline" href="/blog/">← All posts</a>
+          <span aria-hidden="true">·</span>
+          <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+          {post.data.tags.length > 0 && (
+            <span class="flex flex-wrap gap-1.5">
+              {post.data.tags.map((tag) => (
+                <span class="px-1.5 py-0.5 bg-bg border border-line text-[11px] uppercase tracking-wider">
+                  {tag}
+                </span>
+              ))}
+            </span>
+          )}
+        </p>
+        <h1
+          class="m-0 mb-3 text-[clamp(28px,3.5vw,40px)] leading-[1.12] tracking-tight font-bold"
+        >
+          {post.data.title}
+        </h1>
+        <p class="m-0 mb-6 text-muted text-[17px] leading-[1.6]">{post.data.description}</p>
+
+        <div class="prose-content">
+          <Content />
+        </div>
+      </article>
+
+      <footer
+        role="contentinfo"
+        class="mt-10 pt-5 pb-9 border-t border-line text-[13px] text-muted"
+      >
+        <p class="my-0 text-center">
+          <a class="text-accent hover:underline" href="/blog/">More posts</a>
+          <span aria-hidden="true"> · </span>
+          <a class="text-accent hover:underline" href="/">Back to Privacy Filter</a>
+        </p>
+      </footer>
+    </main>
+
+    <style is:global>
+      .prose-content {
+        color: var(--color-text);
+        line-height: 1.75;
+        font-size: 16px;
+      }
+      .prose-content > * + * {
+        margin-top: 1rem;
+      }
+      .prose-content h2 {
+        margin-top: 2.25rem;
+        margin-bottom: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.25;
+      }
+      .prose-content h3 {
+        margin-top: 1.75rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .prose-content p {
+        margin: 0;
+      }
+      .prose-content a {
+        color: var(--color-accent);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .prose-content a:hover {
+        color: var(--color-accent-dark);
+      }
+      .prose-content ul,
+      .prose-content ol {
+        padding-left: 1.4rem;
+      }
+      .prose-content ul {
+        list-style: disc;
+      }
+      .prose-content ol {
+        list-style: decimal;
+      }
+      .prose-content li + li {
+        margin-top: 0.35rem;
+      }
+      .prose-content code {
+        background: #eef3fa;
+        padding: 1px 6px;
+        font-size: 0.9em;
+      }
+      .prose-content pre {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .prose-content pre code {
+        background: transparent;
+        color: inherit;
+        padding: 0;
+        font-size: inherit;
+      }
+      .prose-content blockquote {
+        border-left: 3px solid var(--color-accent);
+        padding-left: 14px;
+        color: var(--color-muted);
+        font-style: italic;
+      }
+      .prose-content hr {
+        border: 0;
+        border-top: 1px solid var(--color-line);
+        margin: 2rem 0;
+      }
+      .prose-content img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid var(--color-line);
+      }
+      .prose-content table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      .prose-content th,
+      .prose-content td {
+        border: 1px solid var(--color-line);
+        padding: 8px 10px;
+        text-align: left;
+      }
+      .prose-content th {
+        background: var(--color-bg);
+        font-weight: 700;
+      }
+    </style>
+  </body>
+</html>
