@@ -708,6 +708,7 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
       import { pipeline, env } from "@huggingface/transformers";
       import { createWorker } from "tesseract.js";
       import { i18n, demos } from "../lib/i18n.js";
+      import { regexScan, mergeSpans } from "../lib/regexPatterns.js";
 
       env.allowLocalModels = false;
       env.remoteHost =
@@ -1344,13 +1345,16 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
 
           const raw = await classifier(text, { aggregation_strategy: "simple" });
           let searchFrom = 0;
-          const spans = raw
+          const modelSpans = raw
             .map((span) => {
               const normalized = normalizeSpan(span, text, searchFrom);
               if (normalized.end > searchFrom) searchFrom = normalized.end;
               return normalized;
             })
             .filter((span) => span.text);
+
+          const regexSpans = regexScan(text);
+          const spans = mergeSpans(modelSpans, regexSpans);
 
           renderImageOverlays(text, spans, words);
           lastImageDebug = {
@@ -1646,13 +1650,16 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
         try {
           const raw = await classifier(source, { aggregation_strategy: "simple" });
           let searchFrom = 0;
-          const spans = raw
+          const modelSpans = raw
             .map((span) => {
               const normalized = normalizeSpan(span, source, searchFrom);
               if (normalized.end > searchFrom) searchFrom = normalized.end;
               return normalized;
             })
             .filter((span) => span.text);
+
+          const regexSpans = regexScan(source);
+          const spans = mergeSpans(modelSpans, regexSpans);
 
           lastSource = source;
           lastSpans = spans;
