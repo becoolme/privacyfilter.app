@@ -707,7 +707,8 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
     <script>
       import { pipeline, env } from "@huggingface/transformers";
       import { createWorker } from "tesseract.js";
-      import { i18n, demos } from "../lib/i18n.js";
+      import { i18n, demos } from "../lib/i18n";
+      import { regexScan, mergeSpans, PATTERN_DESCRIPTIONS } from "../lib/regexPatterns";
 
       env.allowLocalModels = false;
       env.remoteHost =
@@ -1344,13 +1345,16 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
 
           const raw = await classifier(text, { aggregation_strategy: "simple" });
           let searchFrom = 0;
-          const spans = raw
+          const modelSpans = raw
             .map((span) => {
               const normalized = normalizeSpan(span, text, searchFrom);
               if (normalized.end > searchFrom) searchFrom = normalized.end;
               return normalized;
             })
             .filter((span) => span.text);
+
+          const regexSpans = regexScan(text);
+          const spans = mergeSpans(modelSpans, regexSpans, text);
 
           renderImageOverlays(text, spans, words);
           lastImageDebug = {
@@ -1588,7 +1592,8 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
 
           const chip = document.createElement("span");
           chip.className = `entity-chip entity-chip--${labelColors[span.label] || "default"}`;
-          chip.title = `${rawLabelFor(span.label)} · ${labelFor(span.label)} · ${(span.score * 100).toFixed(2)}%`;
+          const description = span.source && PATTERN_DESCRIPTIONS[span.source] ? ` · ${PATTERN_DESCRIPTIONS[span.source]}` : "";
+          chip.title = `${rawLabelFor(span.label)} · ${labelFor(span.label)}${description} · ${(span.score * 100).toFixed(2)}%`;
 
           const value = document.createElement("span");
           value.className = "entity-value";
@@ -1646,13 +1651,16 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
         try {
           const raw = await classifier(source, { aggregation_strategy: "simple" });
           let searchFrom = 0;
-          const spans = raw
+          const modelSpans = raw
             .map((span) => {
               const normalized = normalizeSpan(span, source, searchFrom);
               if (normalized.end > searchFrom) searchFrom = normalized.end;
               return normalized;
             })
             .filter((span) => span.text);
+
+          const regexSpans = regexScan(source);
+          const spans = mergeSpans(modelSpans, regexSpans, source);
 
           lastSource = source;
           lastSpans = spans;
