@@ -1,0 +1,44 @@
+# Privacy Filter Online
+
+> A free, in-browser privacy remover that detects PII (names, emails, phone numbers, addresses, account numbers, dates, URLs, and secrets) and redacts it in one click. Powered by openai/privacy-filter running locally via Transformers.js — your text never leaves the device.
+
+## Core Features
+
+- 100% local inference — no servers, no uploads, no tracking
+- WebGPU accelerated, with WebAssembly fallback for older browsers
+- 8 PII categories detected at token level via BIOES tagging: names, emails, phone numbers, addresses, account numbers, dates, URLs, and secrets
+- Image OCR + PII detection — scan screenshots with on-device Tesseract OCR, then mask sensitive regions
+- Multilingual UI — English, 简体中文, 繁體中文, 日本語, Español, Deutsch, Français, Русский, Português (BR), العربية, 한국어
+- Static site — deploys anywhere (Cloudflare Pages, Vercel, Netlify, GitHub Pages)
+
+## Use Cases
+
+- AI prompt sanitization — privacy clean text before pasting into ChatGPT, Claude, or Gemini
+- Log & ticket redaction — strip customer data from bug reports before sharing
+- Safe document sharing — mask names, addresses, and account numbers in screenshots
+- Secret auditing — catch API keys accidentally committed to docs or chat threads
+
+## Tech Stack
+
+- Framework: Astro 5
+- Styling: Tailwind CSS v4
+- ML runtime: @huggingface/transformers (Transformers.js)
+- Model: openai/privacy-filter
+- OCR: tesseract.js
+- Deployment: Cloudflare Workers / static hosting
+
+## Links
+
+- Live site: https://privacyfilter.app
+- GitHub: https://github.com/becoolme/privacyfilter.app
+- Model: https://huggingface.co/openai/privacy-filter
+- Transformers.js: https://github.com/huggingface/transformers.js
+- Blog: https://privacyfilter.app/blog/
+
+## API
+
+This is a client-side only application. There is no server-side API. All inference runs in the browser using Transformers.js. The openai/privacy-filter model is downloaded from Hugging Face on first use and cached locally.
+
+## License
+
+MIT License. Model weights (openai/privacy-filter) are distributed under Apache-2.0.
