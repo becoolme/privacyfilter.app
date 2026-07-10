@@ -13,6 +13,13 @@ import {
   postSlug
 } from "../../../lib/blog";
 import BlogLanguageSwitcher from "../../../components/BlogLanguageSwitcher.astro";
+import {
+  ORG_NAME,
+  OG_BLOG_IMAGE,
+  OG_IMAGE_WIDTH,
+  OG_IMAGE_HEIGHT,
+  absoluteUrl
+} from "../../../lib/site.js";
 
 export async function getStaticPaths() {
   return localizedLangParams.map(({ lang }) => ({ params: { lang } }));
@@ -34,6 +41,24 @@ const languageOptions = localeNames.map((l) => ({
   label: l.label,
   href: blogIndexPath(l.locale)
 }));
+const canonicalUrl = absoluteUrl(blogIndexPath(locale));
+const blogSchema = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  name: tBlog.heading,
+  description: tBlog.metaDescription,
+  url: canonicalUrl,
+  inLanguage: htmlLangFor(locale),
+  publisher: { "@type": "Organization", name: ORG_NAME, url: absoluteUrl("/") },
+  blogPost: posts.map((post) => ({
+    "@type": "BlogPosting",
+    headline: post.data.title,
+    description: post.data.description,
+    url: absoluteUrl(`${blogIndexPath(locale)}${postSlug(post)}/`),
+    datePublished: post.data.pubDate.toISOString(),
+    dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString()
+  }))
+};
 ---
 
 <!doctype html>
@@ -46,23 +71,38 @@ const languageOptions = localeNames.map((l) => ({
     <meta name="robots" content="index,follow,max-image-preview:large" />
     <meta name="theme-color" content="#1769e0" />
     <meta name="color-scheme" content="light" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" sizes="any" href="/favicon.ico" />
     <link
       rel="icon"
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231769e0'/%3E%3Cpath d='M50 22 28 32v18c0 14 9 22 22 28 13-6 22-14 22-28V32L50 22zm0 14 14 6v8c0 9-6 14-14 18-8-4-14-9-14-18v-8l14-6z' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      href="/blog/rss.xml"
+      title="Privacy Filter Blog"
     />
     {allBlogLocales.map((l) => (
       <link rel="alternate" hreflang={htmlLangFor(l)} href={blogIndexPath(l)} />
     ))}
     <link rel="alternate" hreflang="x-default" href={blogIndexPath("en")} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={tBlog.pageTitle} />
     <meta property="og:description" content={tBlog.metaDescription} />
     <meta property="og:site_name" content="Privacy Filter" />
     <meta property="og:locale" content={ogLocaleFor(locale)} />
+    <meta property="og:image" content={OG_BLOG_IMAGE} />
+    <meta property="og:image:width" content={OG_IMAGE_WIDTH} />
+    <meta property="og:image:height" content={OG_IMAGE_HEIGHT} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={tBlog.pageTitle} />
     <meta name="twitter:description" content={tBlog.metaDescription} />
+    <meta name="twitter:image" content={OG_BLOG_IMAGE} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(blogSchema)} />
   </head>
   <body class="bg-bg text-text">
     <main class="mx-auto w-full max-w-[860px] px-4 py-8 lg:py-9">
@@ -114,26 +154,28 @@ const languageOptions = localeNames.map((l) => ({
         <ul class="m-0 p-0 list-none grid gap-4">
           {posts.map((post) => (
             <li class="border border-line bg-panel p-5 hover:border-accent transition-colors">
-              <a class="no-underline text-text block" href={`${blogIndexPath(locale)}${postSlug(post)}/`}>
-                <div class="flex items-center gap-3 mb-2 text-xs text-muted">
-                  <time datetime={post.data.pubDate.toISOString()}>
-                    {formatPostDate(post.data.pubDate, locale)}
-                  </time>
-                  {post.data.tags.length > 0 && (
-                    <span class="flex flex-wrap gap-1.5">
-                      {post.data.tags.map((tag) => (
-                        <span class="px-1.5 py-0.5 bg-bg border border-line text-[11px] uppercase tracking-wider">
-                          {tag}
-                        </span>
-                      ))}
-                    </span>
-                  )}
-                </div>
-                <h2 class="m-0 mb-1.5 text-xl font-semibold leading-snug">
-                  {post.data.title}
-                </h2>
-                <p class="m-0 text-muted text-sm leading-[1.6]">{post.data.description}</p>
-              </a>
+              <article>
+                <a class="no-underline text-text block" href={`${blogIndexPath(locale)}${postSlug(post)}/`}>
+                  <div class="flex items-center gap-3 mb-2 text-xs text-muted">
+                    <time datetime={post.data.pubDate.toISOString()}>
+                      {formatPostDate(post.data.pubDate, locale)}
+                    </time>
+                    {post.data.tags.length > 0 && (
+                      <span class="flex flex-wrap gap-1.5">
+                        {post.data.tags.map((tag) => (
+                          <span class="px-1.5 py-0.5 bg-bg border border-line text-[11px] uppercase tracking-wider">
+                            {tag}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                  </div>
+                  <h2 class="m-0 mb-1.5 text-xl font-semibold leading-snug">
+                    {post.data.title}
+                  </h2>
+                  <p class="m-0 text-muted text-sm leading-[1.6]">{post.data.description}</p>
+                </a>
+              </article>
             </li>
           ))}
         </ul>

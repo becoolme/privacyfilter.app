@@ -1,0 +1,170 @@
+---
+import "../styles/global.css";
+import { i18n, localeNames, localeToHtmlLang, localeToOgLocale } from "../lib/i18n.js";
+import {
+  changelogUiFor,
+  changelogEntries,
+  changelogChangesFor
+} from "../lib/changelog.js";
+import {
+  ORG_NAME,
+  OG_IMAGE,
+  OG_IMAGE_WIDTH,
+  OG_IMAGE_HEIGHT,
+  absoluteUrl
+} from "../lib/site.js";
+import BlogLanguageSwitcher from "../components/BlogLanguageSwitcher.astro";
+
+const locale = "en";
+const t = i18n[locale];
+const cl = changelogUiFor(locale);
+const repoUrl = "https://github.com/becoolme/privacyfilter.app";
+
+const changelogHref = (loc) => {
+  const info = localeNames.find((l) => l.locale === loc) ?? localeNames[0];
+  return info.path === "/" ? "/changelog/" : `${info.path}/changelog/`;
+};
+const currentPath = changelogHref(locale);
+const canonicalUrl = absoluteUrl(currentPath);
+const languageOptions = localeNames.map((l) => ({
+  locale: l.locale,
+  label: l.label,
+  href: changelogHref(l.locale)
+}));
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric"
+});
+const formatDate = (iso) => dateFormatter.format(new Date(`${iso}T00:00:00Z`));
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: t.blog.navHome, item: absoluteUrl("/") },
+    { "@type": "ListItem", position: 2, name: cl.heading, item: canonicalUrl }
+  ]
+};
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: cl.heading,
+  description: cl.metaDescription,
+  url: canonicalUrl,
+  inLanguage: localeToHtmlLang[locale],
+  isPartOf: { "@type": "WebSite", name: ORG_NAME, url: absoluteUrl("/") }
+};
+---
+
+<!doctype html>
+<html lang={localeToHtmlLang[locale]}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{cl.pageTitle}</title>
+    <meta name="description" content={cl.metaDescription} />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="theme-color" content="#1769e0" />
+    <meta name="color-scheme" content="light" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" sizes="any" href="/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231769e0'/%3E%3Cpath d='M50 22 28 32v18c0 14 9 22 22 28 13-6 22-14 22-28V32L50 22zm0 14 14 6v8c0 9-6 14-14 18-8-4-14-9-14-18v-8l14-6z' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {localeNames.map((l) => (
+      <link rel="alternate" hreflang={localeToHtmlLang[l.locale]} href={changelogHref(l.locale)} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href="/changelog/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={cl.pageTitle} />
+    <meta property="og:description" content={cl.metaDescription} />
+    <meta property="og:site_name" content="Privacy Filter" />
+    <meta property="og:locale" content={localeToOgLocale[locale]} />
+    <meta property="og:image" content={OG_IMAGE} />
+    <meta property="og:image:width" content={OG_IMAGE_WIDTH} />
+    <meta property="og:image:height" content={OG_IMAGE_HEIGHT} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={cl.pageTitle} />
+    <meta name="twitter:description" content={cl.metaDescription} />
+    <meta name="twitter:image" content={OG_IMAGE} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(collectionSchema)} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
+  </head>
+  <body class="bg-bg text-text">
+    <main class="mx-auto w-full max-w-[760px] px-4 py-8 lg:py-9">
+      <header
+        role="banner"
+        class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-1 pb-5"
+      >
+        <a class="inline-flex items-center gap-2.5 text-text no-underline" href="/" aria-label={t.homeLinkLabel}>
+          <span
+            aria-hidden="true"
+            class="inline-grid place-items-center w-[30px] h-[30px] bg-accent text-white text-xs font-extrabold tracking-wider"
+            >PF</span
+          >
+          <strong class="font-extrabold tracking-tight text-base">Privacy Filter</strong>
+        </a>
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <nav aria-label="Primary" class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+            <a class="text-muted no-underline hover:text-accent transition-colors" href="/">{t.blog.navHome}</a>
+            <a class="text-muted no-underline hover:text-accent transition-colors" href="/blog/">{t.navBlog}</a>
+            <a class="text-text no-underline font-semibold" href={currentPath} aria-current="page">{cl.navChangelog}</a>
+            <a
+              class="text-muted no-underline hover:text-accent transition-colors"
+              href={repoUrl}
+              target="_blank"
+              rel="noopener">{t.navGithub}</a
+            >
+          </nav>
+          <BlogLanguageSwitcher
+            currentLocale={locale}
+            options={languageOptions}
+            menuLabel={t.languageMenu}
+          />
+        </div>
+      </header>
+
+      <section class="mb-8">
+        <h1 class="m-0 mb-3 text-[clamp(30px,4vw,44px)] leading-[1.08] tracking-tight font-bold">
+          {cl.heading}
+        </h1>
+        <p class="m-0 text-muted text-[16px] leading-[1.65] max-w-[640px]">{cl.intro}</p>
+      </section>
+
+      <ol class="m-0 p-0 list-none grid gap-4">
+        {changelogEntries.map((entry) => (
+          <li class="border border-line bg-panel p-5">
+            <article>
+              <div class="flex items-center gap-3 mb-2 text-xs text-muted">
+                <time datetime={entry.date}>{formatDate(entry.date)}</time>
+                <span class="px-1.5 py-0.5 bg-bg border border-line text-[11px] uppercase tracking-wider">
+                  {entry.version}
+                </span>
+              </div>
+              <ul class="m-0 pl-5 list-disc grid gap-1.5 text-[15px] leading-[1.6]">
+                {changelogChangesFor(entry, locale).map((change) => (
+                  <li>{change}</li>
+                ))}
+              </ul>
+            </article>
+          </li>
+        ))}
+      </ol>
+
+      <footer
+        role="contentinfo"
+        class="mt-10 pt-5 pb-9 border-t border-line text-[13px] text-muted"
+      >
+        <p class="my-0 text-center">
+          <a class="text-accent hover:underline" href="/">{cl.backHome}</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+# Privacy Filter - https://privacyfilter.app
+# Content signals declare how this site may be used by automated crawlers.
+# search=yes (allow indexing), ai-input=yes (allow use as AI answer source),
+# ai-train=no (do not use for training). See:
+# https://blog.cloudflare.com/content-signals-policy/
+
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+
+Sitemap: https://privacyfilter.app/sitemap-index.xml

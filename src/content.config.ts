@@ -9,6 +9,8 @@ const blog = defineCollection({
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     author: z.string().default("Privacy Filter Team"),
+    authorUrl: z.string().url().optional(),
+    heroImage: z.string().optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false)
   })

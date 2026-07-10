@@ -13,6 +13,8 @@
     "build": "astro build",
     "check": "astro check",
     "preview": "astro preview",
+    "lint": "node scripts/seo-lint.mjs",
+    "prepare": "husky",
     "deploy": "pnpm build && wrangler deploy"
   },
   "dependencies": {
@@ -23,7 +25,10 @@
     "typescript": "^5.6.3"
   },
   "devDependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
     "@tailwindcss/vite": "^4.2.4",
+    "husky": "^9.1.7",
     "tailwindcss": "^4.2.4",
     "wrangler": "^4.0.0"
   }
