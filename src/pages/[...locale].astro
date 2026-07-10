@@ -10,6 +10,17 @@ import {
   localeToOgLocale,
   localeIsRtl
 } from "../lib/i18n.js";
+import {
+  SITE_ORIGIN,
+  ORG_NAME,
+  ORG_SAME_AS,
+  OG_IMAGE,
+  OG_IMAGE_WIDTH,
+  OG_IMAGE_HEIGHT,
+  LOGO_URL,
+  absoluteUrl
+} from "../lib/site.js";
+import { changelogUiFor } from "../lib/changelog.js";
 
 export function getStaticPaths() {
   return [
@@ -47,6 +58,9 @@ const repoIssuesUrl = `${repoUrl}/issues`;
 const repoLicenseUrl = `${repoUrl}/blob/main/LICENSE`;
 const repoContribUrl = `${repoUrl}/blob/main/CONTRIBUTING.md`;
 const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
+const changelogPath = pathLocale ? `/${pathLocale}/changelog/` : "/changelog/";
+const canonicalUrl = absoluteUrl(currentPath);
+const cl = changelogUiFor(locale);
 ---
 
 <!doctype html>
@@ -63,11 +77,14 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
     <meta name="robots" content="index,follow,max-image-preview:large" />
     <meta name="theme-color" content="#1769e0" />
     <meta name="color-scheme" content="light" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" sizes="any" href="/favicon.ico" />
     <link
       rel="icon"
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231769e0'/%3E%3Cpath d='M50 22 28 32v18c0 14 9 22 22 28 13-6 22-14 22-28V32L50 22zm0 14 14 6v8c0 9-6 14-14 18-8-4-14-9-14-18v-8l14-6z' fill='%23fff'/%3E%3C/svg%3E"
     />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     {localeNames.map((l) => (
       <link
@@ -79,6 +96,7 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
     <link rel="alternate" hreflang="x-default" href="/" />
 
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={meta.ogTitle} />
     <meta property="og:description" content={meta.ogDescription} />
     <meta property="og:site_name" content="Privacy Filter" />
@@ -86,10 +104,15 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
     {ogAlternates.map((alt) => (
       <meta property="og:locale:alternate" content={alt} />
     ))}
+    <meta property="og:image" content={OG_IMAGE} />
+    <meta property="og:image:width" content={OG_IMAGE_WIDTH} />
+    <meta property="og:image:height" content={OG_IMAGE_HEIGHT} />
+    <meta property="og:image:alt" content={meta.ogTitle} />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={meta.ogTitle} />
     <meta name="twitter:description" content={meta.ogDescription} />
+    <meta name="twitter:image" content={OG_IMAGE} />
 
     <link rel="preconnect" href="https://huggingface.co" crossorigin />
     <link rel="dns-prefetch" href="https://huggingface.co" />
@@ -103,20 +126,36 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
         "@context": "https://schema.org",
         "@type": "WebApplication",
         name: "Privacy Filter",
+        url: canonicalUrl,
+        image: OG_IMAGE,
         description: meta.metaDescription,
         applicationCategory: "SecurityApplication",
         operatingSystem: "Any (Web)",
         browserRequirements:
           "Chrome or Edge with WebGPU recommended; falls back to WebAssembly on other modern browsers.",
         isAccessibleForFree: true,
+        license: "https://opensource.org/licenses/MIT",
         offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         inLanguage: htmlLang,
+        publisher: { "@type": "Organization", name: ORG_NAME, url: SITE_ORIGIN },
         featureList: [
           t.trust1Title + " — " + t.trust1Body,
           t.trust2Title + " — " + t.trust2Body,
           t.trust3Title + " — " + t.trust3Body,
           t.trust4Title + " — " + t.trust4Body
         ]
+      })}
+    />
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: ORG_NAME,
+        url: SITE_ORIGIN,
+        logo: LOGO_URL,
+        sameAs: ORG_SAME_AS
       })}
     />
     <script
@@ -193,6 +232,7 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
             <a class="text-muted no-underline hover:text-accent transition-colors" href="#use-cases">{t.navUseCases}</a>
             <a class="text-muted no-underline hover:text-accent transition-colors" href="#faq">{t.navFaq}</a>
             <a class="text-muted no-underline hover:text-accent transition-colors" href={blogPath}>{t.navBlog}</a>
+            <a class="text-muted no-underline hover:text-accent transition-colors" href={changelogPath}>{cl.navChangelog}</a>
             <a class="text-muted no-underline hover:text-accent transition-colors" href="https://huggingface.co/openai/privacy-filter" target="_blank" rel="noopener">{t.navModel}</a>
             <a
               class="inline-flex items-center gap-1.5 text-muted no-underline hover:text-accent transition-colors"
@@ -671,6 +711,7 @@ const blogPath = pathLocale ? `/${pathLocale}/blog/` : "/blog/";
           <p class="my-0">{t.footerText}</p>
           <nav aria-label={t.footerOpenSource} class="flex flex-wrap justify-center gap-x-4 gap-y-1">
             <a class="text-accent hover:underline" href={blogPath}>{t.navBlog}</a>
+            <a class="text-accent hover:underline" href={changelogPath}>{cl.navChangelog}</a>
             <a class="text-accent hover:underline" href={repoUrl} target="_blank" rel="noopener">{t.footerSource}</a>
             <a class="text-accent hover:underline" href={repoLicenseUrl} target="_blank" rel="noopener">{t.footerLicense}</a>
             <a class="text-accent hover:underline" href={repoContribUrl} target="_blank" rel="noopener">{t.footerContribute}</a>

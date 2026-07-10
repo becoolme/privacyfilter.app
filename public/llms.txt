@@ -34,6 +34,9 @@
 - Model: https://huggingface.co/openai/privacy-filter
 - Transformers.js: https://github.com/huggingface/transformers.js
 - Blog: https://privacyfilter.app/blog/
+- Changelog: https://privacyfilter.app/changelog/
+- Sitemap: https://privacyfilter.app/sitemap-index.xml
+- RSS: https://privacyfilter.app/blog/rss.xml
 
 ## API
 

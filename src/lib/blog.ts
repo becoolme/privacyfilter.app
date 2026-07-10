@@ -55,6 +55,20 @@ const localeOg: Record<BlogLocale, string> = {
   ko: "ko_KR"
 };
 
+const localeBreadcrumbLabel: Record<BlogLocale, string> = {
+  en: "Breadcrumb",
+  ja: "パンくずリスト",
+  "zh-CN": "面包屑导航",
+  "zh-TW": "麵包屑導覽",
+  es: "Ruta de navegación",
+  de: "Brotkrümelnavigation",
+  fr: "Fil d'Ariane",
+  ru: "Навигационная цепочка",
+  "pt-BR": "Trilha de navegação",
+  ar: "مسار التنقل",
+  ko: "탐색 경로"
+};
+
 const localeDateLocale: Record<BlogLocale, string> = {
   en: "en-US",
   ja: "ja-JP",
@@ -113,6 +127,10 @@ export function htmlLangFor(locale: BlogLocale): string {
 
 export function ogLocaleFor(locale: BlogLocale): string {
   return localeOg[locale];
+}
+
+export function breadcrumbLabelFor(locale: BlogLocale): string {
+  return localeBreadcrumbLabel[locale];
 }
 
 export function formatPostDate(date: Date, locale: BlogLocale): string {
